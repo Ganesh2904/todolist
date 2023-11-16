@@ -3,6 +3,14 @@ const addTask = document.getElementById("addbtn");
 const input = document.querySelector("input");
 const form = document.querySelector("form");
 
+let isLoaded = false;
+for(let i=0;i<localStorage.length;i++){
+  if(localStorage.key(i)!=""){
+    addingTask(localStorage.key(i));
+  }
+}
+isLoaded=true;
+
 addTask.addEventListener("click", addingTask);
 
 function checkEnpty(str) {
@@ -20,12 +28,16 @@ function checkEnpty(str) {
 }
 
 function addingTask(e) {
-  e.preventDefault();
-  if (checkEnpty(input.value)) {
+  if (checkEnpty(input.value) && isLoaded==true) {
     alert("Input field should not be empty");
     document.querySelector("input").value = "";
   } else {
-    let p = [...input.value];
+    if(document.querySelector("input").value == ""){
+      var p = e;
+    } else {
+      e.preventDefault();
+      var p = [...input.value];
+    }
     let arr = [];
     for (let i = 0; i < p.length; i++) {
       if (p[i] != " ") {
@@ -33,6 +45,10 @@ function addingTask(e) {
       }
     }
     p = arr.join("");
+    
+    // adding data to localStoarage
+    localStorage.setItem(input.value,input.value);
+
     let newTask = document.createElement("div");
     let label = document.createElement("label");
     let taskText = document.createElement("p");
@@ -41,7 +57,11 @@ function addingTask(e) {
     let editBtn = document.createElement("button");
     deleteBtn.innerText = "delete";
     editBtn.innerText = "edit";
-    taskText.innerText = input.value;
+    if(input.value!=""){
+      taskText.innerText = input.value;
+    } else{
+      taskText.innerText = p;
+    }
     taskCheck.setAttribute("type", "checkbox");
     newTask.setAttribute("class", "form-check");
     taskCheck.setAttribute("class", "form-check-input");
@@ -58,11 +78,20 @@ function addingTask(e) {
     });
 
     // TO remove element
-    deleteBtn.addEventListener("click", () => deleteBtn.parentElement.remove());
+    deleteBtn.addEventListener("click", () =>{ 
+      // removing element data from localStoarage
+      localStorage.removeItem(deleteBtn.nextElementSibling.firstElementChild.innerText);
+      // removing element from dom
+      deleteBtn.parentElement.remove();
+    });
 
     // to edit element
     editBtn.addEventListener("click", () => {
+      // removing old value to update in localStorage
+      localStorage.removeItem(editBtn.previousElementSibling.firstElementChild.innerText);
       let newV = prompt("Enter new value");
+      // adding updated value in localStorage
+      localStorage.setItem(newV,newV);
       taskText.innerHTML = newV;
     });
 
